@@ -15,6 +15,8 @@ const alloc = std.heap.c_allocator;
 pub const current: []const u8 = build_options.version;
 const latest_url = "https://api.github.com/repos/RshaCuDeVidro/larperCord/releases/latest";
 pub const releases_page = "https://github.com/uargument3384/larperCord-JP/releases";
+/// Temporarily disabled while the fork's release/update format is being prepared.
+pub const temporarily_disabled = true;
 
 /// Arquivo publicado -> nome ao lado do executável.
 const File = struct { asset: []const u8, target: []const u8 };
@@ -100,12 +102,14 @@ fn start(f: *const fn (?*anyopaque) callconv(.c) c_int) void {
 
 /// Pergunta se há versão nova (não bloqueia).
 pub fn check() void {
+    if (temporarily_disabled) return;
     if (offline) return qaSet(.up_to_date, current);
     start(checkThread);
 }
 
 /// Baixa e instala a versão que `check` achou (não bloqueia).
 pub fn install() void {
+    if (temporarily_disabled) return;
     if (offline) return qaSet(.ready, snapshot().latest());
     start(installThread);
 }
