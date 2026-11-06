@@ -128,7 +128,7 @@ pub const Fonts = struct {
             jcfg.FontLoaderFlags = light_hinting;
             // O Noto JP fica um pouco mais encorpado para manter a leitura
             // nítida no fundo escuro, sem engrossar os glifos latinos.
-            jcfg.RasterizerMultiply = 1.18;
+            jcfg.RasterizerMultiply = 1.40;
             jcfg.FontDataOwnedByAtlas = false;
             _ = c.ImFontAtlas_AddFontFromMemoryTTF(f.atlas, jp.ptr, @intCast(jp.len), 16, &jcfg, &japanese_ranges);
         }
