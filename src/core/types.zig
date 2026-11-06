@@ -427,6 +427,10 @@ pub const Message = struct {
     nonce: u64 = 0,
     /// Mensagem que esta responde (0 = nenhuma).
     reply_to: Id = 0,
+    /// Original location for a native Discord forward.
+    forward_channel: Id = 0,
+    forward_message: Id = 0,
+    forwarded: bool = false,
     edited: bool = false,
     attachments: []const Attachment = &.{},
     embeds: []const Embed = &.{},
