@@ -27,6 +27,11 @@ jobs:
           version: 0.17.0
       - run: tools/windows_deps.sh
       - run: zig build -Dtarget=x86_64-windows-gnu -Dqa=true
+      - name: Bundle Noto Sans JP
+        run: |
+          mkdir -p zig-out/bin/fonts
+          curl -fL --retry 3 'https://raw.githubusercontent.com/google/fonts/38411257417e616c5d4daa1b9e91a3dbcebe1c2e/ofl/notosansjp/NotoSansJP%5Bwght%5D.ttf' -o zig-out/bin/fonts/NotoSansJP.ttf
+          curl -fL --retry 3 'https://raw.githubusercontent.com/google/fonts/38411257417e616c5d4daa1b9e91a3dbcebe1c2e/ofl/notosansjp/OFL.txt' -o zig-out/bin/fonts/OFL.txt
       - uses: actions/upload-artifact@v4
         with:
           name: windows-qa-build
