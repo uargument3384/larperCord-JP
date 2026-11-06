@@ -468,9 +468,9 @@ fn forwardTargets(ctx: *d.Ctx, source: Id, out: []Id) usize {
             n_.* += 1;
         }
     }.add;
-    for (ctx.store.channelsOf(0)) |id| addChannel.add(ctx, id, source, out, &n);
+    for (ctx.store.channelsOf(0)) |id| addChannel(ctx, id, source, out, &n);
     for (ctx.store.guilds.items) |g| {
-        for (ctx.store.channelsOf(g.id)) |id| addChannel.add(ctx, id, source, out, &n);
+        for (ctx.store.channelsOf(g.id)) |id| addChannel(ctx, id, source, out, &n);
     }
     return n;
 }
