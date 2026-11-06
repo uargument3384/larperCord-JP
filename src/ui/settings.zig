@@ -733,7 +733,7 @@ fn page(p: *Page, previews: []const Preview) void {
         .idioma => {
             p.title(i18n.tr("Idioma", "Language"));
             // Os nomes dos idiomas ficam sempre na própria língua.
-            p.radio(&.{ i18n.tr("Seguir o sistema", "Follow system"), "Português (Brasil)", "English (US)" }, &.{}, &s.language);
+            p.radio(&.{ i18n.tr("Seguir o sistema", "Follow system"), "Português (Brasil)", "English (US)", "日本語" }, &.{}, &s.language);
             p.note(i18n.tr("Por padrão o app segue o idioma do sistema. A troca vale na hora.", "By default the app follows your system language. Changes apply right away."));
         },
         .avancado => {
