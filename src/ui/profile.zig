@@ -82,6 +82,7 @@ const months_short_en = [_][]const u8{ "Jan", "Feb", "Mar", "Apr", "May", "Jun",
 /// "21 de nov. de 2017" / "Nov 21, 2017".
 fn dateShort(buf: []u8, ms: i64) []const u8 {
     const t = w.localTime(@divTrunc(ms, 1000));
+    if (i18n.ja()) return std.fmt.bufPrint(buf, "{d}年{d}月{d}日", .{ t.year, t.month, t.day }) catch "";
     const m: usize = t.month - 1;
     return i18n.fmt(buf, "{d} de {s} de {d}", "{1s} {0d}, {2d}", .{ t.day, if (i18n.en()) months_short_en[m] else months_short[m], t.year });
 }
