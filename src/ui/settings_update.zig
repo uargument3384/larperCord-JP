@@ -25,6 +25,10 @@ pub fn draw(p: anytype) void {
     if (updater.temporarily_disabled) {
         p.note(i18n.tr("A função de atualização está temporariamente desativada. Ela será reativada quando a integração com o GitHub Releases estiver pronta.", "The update feature is temporarily disabled. It will be re-enabled once GitHub Releases integration is ready."));
         if (p.buttonSoft(i18n.tr("Ver as versões no GitHub", "View releases on GitHub"))) att.openUrl(updater.releases_page);
+        p.divider();
+        p.heading(i18n.tr("Reiniciar", "Restart"));
+        p.note(i18n.tr("Fecha e abre o larperCord de novo. Se estiver em uma call, ela cai.", "Closes and reopens larperCord. If you're in a call, you'll leave it."));
+        if (p.buttonSoft(i18n.tr("Reiniciar o larperCord", "Restart larperCord"))) ctx.act(.restart);
         return;
     }
     var mb: [120]u8 = undefined;
