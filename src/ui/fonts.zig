@@ -30,6 +30,8 @@ pub const Fonts = struct {
     emoji: ?[]u8 = null,
     /// Fonte reserva para símbolos que a fonte principal não tem (⌁ ▣ ◐ ♪ …).
     symbols: ?struct { data: []u8, index: c_int } = null,
+    /// Fonte japonesa empacotada ao lado do executável (não depende de C:\\Windows\\Fonts).
+    japanese: ?[]u8 = null,
 
     pub fn init(gpa: std.mem.Allocator, atlas: *c.ImFontAtlas) Fonts {
         var f: Fonts = .{ .gpa = gpa, .atlas = atlas };
@@ -42,6 +44,13 @@ pub const Fonts = struct {
             if (f.mapPath(m.path)) |data| {
                 f.symbols = .{ .data = data, .index = m.index };
             } else |_| {}
+        }
+        // SDL_GetBasePath aponta para a pasta do executável. Assim o pacote
+        // funciona mesmo quando o usuário inicia o app por outro diretório.
+        if (c.SDL_GetBasePath()) |base| {
+            var path_buf: [1024]u8 = undefined;
+            const path = std.fmt.bufPrintSentinel(&path_buf, "{s}fonts/NotoSansJP.ttf", .{std.mem.span(base)}, 0) catch return f;
+            if (sys.exists(path.ptr)) f.japanese = f.mapPath(path) catch null;
         }
         return f;
     }
@@ -111,6 +120,18 @@ pub const Fonts = struct {
             scfg.FontDataOwnedByAtlas = false;
             _ = c.ImFontAtlas_AddFontFromMemoryTTF(f.atlas, sym.data.ptr, @intCast(sym.data.len), 16, &scfg, null);
         }
+        // Mescla kana, kanji e pontuação japonesa em cada família já carregada.
+        // Os glifos latinos continuam vindo da fonte escolhida pelo tema.
+        if (f.japanese) |jp| {
+            var jcfg = defaultConfig();
+            jcfg.MergeMode = true;
+            jcfg.FontLoaderFlags = light_hinting;
+            // O Noto JP fica um pouco mais encorpado para manter a leitura
+            // nítida no fundo escuro, sem engrossar os glifos latinos.
+            jcfg.RasterizerMultiply = 1.18;
+            jcfg.FontDataOwnedByAtlas = false;
+            _ = c.ImFontAtlas_AddFontFromMemoryTTF(f.atlas, jp.ptr, @intCast(jp.len), 16, &jcfg, &japanese_ranges);
+        }
         return font;
     }
 
@@ -126,6 +147,18 @@ pub const Fonts = struct {
 /// Faixas que o emoji colorido deve fornecer mesmo que a fonte do texto tenha
 /// uma versão em preto e branco (❤ ☀ ✨ …).
 const emoji_ranges = [_]c.ImWchar{ 0x2600, 0x27BF, 0x2B00, 0x2BFF, 0x1F000, 0x1FAFF, 0 };
+/// Hiragana, katakana, kanji, CJK symbols, and full-width punctuation.
+const japanese_ranges = [_]c.ImWchar{
+    0x3000, 0x30FF,
+    0x31F0, 0x31FF,
+    0x3200, 0x32FF,
+    0x3300, 0x33FF,
+    0x3400, 0x4DBF,
+    0x4E00, 0x9FFF,
+    0xF900, 0xFAFF,
+    0xFF00, 0xFFEF,
+    0,
+};
 
 fn defaultConfig() c.ImFontConfig {
     var cfg = std.mem.zeroes(c.ImFontConfig);

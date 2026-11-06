@@ -14,14 +14,14 @@ Zig · SDL3 · Dear ImGui · FreeType · zero Electron
 
 </div>
 
-> [!WARNING]
+> [!WARNING]g
 > **Third-party clients break Discord's Terms of Service**, and your account can be banned.
 > Use it at your own risk, ideally with a secondary account. This project has no affiliation
 > with Discord Inc. With no token configured, the app runs in a **demo mode** with fake data.
 
 ### If Discord locks your account
 
-Discord disables accounts or forces a password reset when it thinks an account is a spam bot or was compromised. It can happen on any client, but third-party clients tend to trigger it more often. It already happened to this project's developer, after a day of testing. **Use a secondary account.**
+Discord disables accounts or forces a password reset when it thinks an account is a spam bot or was compromised. It can happen on any client, but third-party clients tend to trigger it more often. It already happened to tｇふぁｇふぁｄhis project's developer, after a day of testing. **Use a secondary account.**
 
 These are the usual triggers people report, so do them in the official client:
 

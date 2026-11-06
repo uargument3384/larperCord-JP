@@ -631,7 +631,7 @@ fn page(p: *Page, previews: []const Preview) void {
             }
             p.divider();
             p.heading(i18n.tr("Escala da fonte", "Font scaling"));
-            p.slider(i18n.tr("Tamanho do texto", "Text size"), &s.font_scale, 0.8, 1.3, "{d:.0}%", 100);
+            p.slider(i18n.tr("Tamanho do texto", "Text size"), &s.font_scale, 0.8, 1.3, "{d:.0}%", 112);
             p.heading(i18n.tr("Exibição das mensagens", "Message display"));
             p.toggle(i18n.tr("Modo compacto", "Compact mode"), i18n.tr("Menos espaço entre grupos e avatares menores.", "Less space between groups and smaller avatars."), &s.compact);
             p.toggle(i18n.tr("Mostrar avatares", "Show avatars"), i18n.tr("Exibe a foto ao lado do nome.", "Shows the profile picture next to the name."), &s.show_avatars);
