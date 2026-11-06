@@ -1201,7 +1201,7 @@ pub const App = struct {
                 gop.value_ptr.state = .loading;
                 app.cmd(.{ .fetch_pins = id });
             },
-            .forward_message => |f| app.cmd(.{ .forward_message = f }),
+            .forward_message => |f| app.cmd(.{ .forward_message = .{ .source_channel = f.source_channel, .source_message = f.source_message, .destination_channel = f.destination_channel } }),
             .pin_message => |p| {
                 if (app.store.channel(p.channel)) |cs| if (app.store.find(cs, p.id)) |m| {
                     m.msg.pinned = p.add;
