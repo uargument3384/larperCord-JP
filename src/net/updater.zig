@@ -14,7 +14,7 @@ const alloc = std.heap.c_allocator;
 
 pub const current: []const u8 = build_options.version;
 const latest_url = "https://api.github.com/repos/RshaCuDeVidro/larperCord/releases/latest";
-pub const releases_page = "https://github.com/RshaCuDeVidro/larperCord/releases";
+pub const releases_page = "https://github.com/uargument3384/larperCord-JP/releases";
 
 /// Arquivo publicado -> nome ao lado do executável.
 const File = struct { asset: []const u8, target: []const u8 };
