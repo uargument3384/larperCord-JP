@@ -22,6 +22,11 @@ pub fn draw(p: anytype) void {
     p.title(i18n.tr("Atualizações", "Updates"));
     var vb: [64]u8 = undefined;
     p.line(.semibold, 16, ctx.col(.text), i18n.fmt(&vb, "Versão {s}", "Version {s}", .{updater.current}), 28);
+    if (updater.temporarily_disabled) {
+        p.note(i18n.tr("A função de atualização está temporariamente desativada. Ela será reativada quando o sistema de releases estiver pronto.", "更新機能は一時的に無効化されています。GitHub Releasesとの連携準備が整い次第、再有効化されます。"));
+        if (p.buttonSoft(i18n.tr("Ver as versões no GitHub", "GitHubのリリースを見る"))) att.openUrl(updater.releases_page);
+        return;
+    }
     var mb: [120]u8 = undefined;
     const line: []const u8 = switch (s.phase) {
         .idle => i18n.tr("Ainda não verificou nesta sessão.", "Not checked yet in this session."),
