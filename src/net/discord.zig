@@ -3016,6 +3016,15 @@ pub const Gateway = struct {
                     _ = c.unlink(f.ptr);
                 };
             },
+            .forward_message => |f| {
+                var body_buf: [192]u8 = undefined;
+                const body = std.fmt.bufPrint(&body_buf, "{{\"message_reference\":{{\"type\":1,\"message_id\":\"{d}\",\"channel_id\":\"{d}\"}}}}", .{ f.source_message, f.source_channel }) catch return;
+                const path = std.fmt.bufPrint(&path_buf, "/channels/{d}/messages", .{f.destination_channel}) catch return;
+                var resp = g.request("POST", path, body) orelse return g.notice("sem conexão: não foi possível encaminhar", "no connection: couldn't forward", .{});
+                defer resp.body.deinit(alloc);
+                if (resp.status >= 300) return g.noticeHttp(i18n.tr("não foi possível encaminhar a mensagem", "couldn't forward the message"), &resp);
+                g.notice("mensagem encaminhada ✓", "message forwarded ✓", .{});
+            },
             .edit_message => |m| {
                 var b: std.ArrayList(u8) = .empty;
                 defer b.deinit(alloc);

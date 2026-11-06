@@ -21,6 +21,7 @@ const mosaic = @import("mosaic.zig");
 const guild_color = @import("guild_color.zig");
 const accounts_menu = @import("accounts_menu.zig");
 const forum = @import("forum.zig");
+const dropdown = @import("dropdown.zig");
 const engine = @import("../plugins/engine.zig");
 
 const quick = [_][]const u8{ "👍", "😂", "😭", "🔥" };
@@ -95,6 +96,7 @@ fn popupKey(p: state.Popup) u64 {
         .new_thread => |t| 9 +% t.message *% 31,
         .new_post => |t| 10 +% t.forum *% 31,
         .edit_place => |t| 11 +% t.id *% 31,
+        .forward => |f| 12 +% f.message *% 31 +% f.channel,
     };
 }
 
@@ -161,6 +163,7 @@ pub fn draw(ctx: *d.Ctx) void {
         .new_thread => |t| forum.newThread(ctx, t.message),
         .new_post => |t| forum.newPost(ctx, t.forum),
         .edit_place => |t| @import("edit_place.zig").draw(ctx, t.id, t.group),
+        .forward => |f| forwardDialog(ctx, f.channel, f.message, f.target),
         .none => {},
     }
     animateOpen(ctx);
@@ -263,6 +266,8 @@ fn menu(ctx: *d.Ctx, kind: state.MenuKind, id: Id, x: f32, y: f32) void {
             add(&items, &n, .{ .label = "Adicionar reação", .en = "Add Reaction", .id = 3 });
             add(&items, &n, .{ .label = if (ctx.st.selection.empty()) "Copiar texto" else "Copiar seleção", .en = if (ctx.st.selection.empty()) "Copy Text" else "Copy Selection", .id = 4 });
             add(&items, &n, .{ .label = "Copiar link da mensagem", .en = "Copy Message Link", .id = 5 });
+            if (found.m.msg.id != 0 and found.m.msg.system == .none)
+                add(&items, &n, .{ .label = "Encaminhar mensagem…", .en = "Forward Message…", .id = 14, .sep = true });
             // Salvas: só neste computador (ui/saved.zig).
             if (found.m.msg.id != 0) {
                 if (ctx.st.saved.find(id) != null)
@@ -450,6 +455,93 @@ fn menu(ctx: *d.Ctx, kind: state.MenuKind, id: Id, x: f32, y: f32) void {
     if (kind == .status and accounts_menu.draw(ctx, dl, r, yy)) close(ctx);
 }
 
+
+/// Lista os canais de texto/threads em que a conta pode ver e enviar mensagens.
+fn forwardTargets(ctx: *d.Ctx, source: Id, out: []Id) usize {
+    var n: usize = 0;
+    const addChannel = struct {
+        fn add(ctx_: *d.Ctx, id: Id, source_: Id, out_: []Id, n_: *usize) void {
+            if (id == source_ or n_.* == out_.len) return;
+            const cs = ctx_.store.channel(id) orelse return;
+            if (cs.info.kind != .text or !ctx_.store.canAccess(&cs.info) or !ctx_.store.canSend(&cs.info)) return;
+            out_[n_.*] = id;
+            n_.* += 1;
+        }
+    }.add;
+    for (ctx.store.channelsOf(0)) |id| addChannel.add(ctx, id, source, out, &n);
+    for (ctx.store.guilds.items) |g| {
+        for (ctx.store.channelsOf(g.id)) |id| addChannel.add(ctx, id, source, out, &n);
+    }
+    return n;
+}
+
+fn forwardLabel(ctx: *d.Ctx, id: Id, buf: []u8) []const u8 {
+    const cs = ctx.store.channel(id) orelse return i18n.tr("Canal indisponível", "Channel unavailable");
+    if (cs.info.guild != 0) {
+        if (ctx.store.guild(cs.info.guild)) |g|
+            return std.fmt.bufPrint(buf, "{s}  /  #{s}", .{ g.name, cs.info.name }) catch cs.info.name;
+    }
+    return std.fmt.bufPrint(buf, "{s}", .{cs.info.name}) catch cs.info.name;
+}
+
+/// Seletor do destino para o encaminhamento nativo do Discord.
+fn forwardDialog(ctx: *d.Ctx, source_channel: Id, source_message: Id, target: Id) void {
+    const r = fit(ctx, ctx.win.x + (ctx.win.w - 440) / 2, ctx.win.y + (ctx.win.h - 208) / 2, 440, 208);
+    const dl = beginWindow("##forward-dialog", r);
+    defer c.ImGui_End();
+    ctx.dl = dl;
+    d.shadow(dl, r, ctx.th.radius, 14, ctx.col(.shadow));
+    d.rect(dl, r, ctx.col(.overlay), ctx.th.radius);
+    d.border(dl, r, ctx.col(.border), ctx.th.radius, 1);
+    const fam = ctx.ui;
+    d.text(dl, fam.get(.semibold), 17, r.x + 20, r.y + 16, ctx.col(.text), i18n.tr("Encaminhar mensagem", "Forward message"));
+
+    var ids: [1024]Id = undefined;
+    const count = forwardTargets(ctx, source_channel, &ids);
+    const anchor: d.Rect = .{ .x = r.x + 18, .y = r.y + 58, .w = r.w - 36, .h = 38 };
+    const label = if (target != 0) forwardLabel(ctx, target, &forward_label_buf) else i18n.tr("Selecionar canal de destino…", "Select a destination channel…");
+    const select_hit = d.hit(ctx, 0xF001, anchor);
+    qa.mark(anchor, "forward-target-select", .{});
+    d.rect(dl, anchor, if (select_hit.hovered) ctx.col(.hover) else ctx.col(.field), @max(ctx.th.radius - 2, 3));
+    d.border(dl, anchor, ctx.col(.border), @max(ctx.th.radius - 2, 3), 1);
+    _ = d.textClipped(dl, fam.get(.regular), 14, anchor.x + 12, d.centerY(anchor, 14), ctx.col(if (target != 0) .text else .muted), label, anchor.w - 36);
+    if (select_hit.clicked) dropdown.toggle(0xF001);
+
+    const list_h = @max(@as(f32, 32), @as(f32, @floatFromInt(count)) * 32);
+    if (dropdown.begin(ctx, 0xF001, anchor, anchor.w, list_h)) |*dd| {
+        defer dd.end();
+        for (ids[0..count]) |cid| {
+            const row = dd.row(32, cid == target);
+            var buf: [192]u8 = undefined;
+            const text = forwardLabel(ctx, cid, &buf);
+            _ = d.textClipped(dd.dl, fam.get(.medium), 13, row.rect.x + 9, d.centerY(row.rect, 13), ctx.col(.text), text, row.rect.w - 18);
+            if (row.hit.clicked) {
+                ctx.st.popup = .{ .forward = .{ .channel = source_channel, .message = source_message, .target = cid } };
+                dropdown.close();
+                return;
+            }
+        }
+    }
+
+    const cancel: d.Rect = .{ .x = r.right() - 204, .y = r.bottom() - 54, .w = 82, .h = 34 };
+    const send: d.Rect = .{ .x = r.right() - 112, .y = r.bottom() - 54, .w = 94, .h = 34 };
+    const cb = d.hit(ctx, 0xF002, cancel);
+    if (cb.hovered) d.rect(dl, cancel, ctx.col(.hover), @max(ctx.th.radius - 2, 3));
+    _ = d.textClipped(dl, fam.get(.medium), 13, cancel.x + 12, d.centerY(cancel, 13), ctx.col(.text), i18n.tr("Cancelar", "Cancel"), cancel.w - 20);
+    if (cb.clicked) return close(ctx);
+    const valid = target != 0 and ctx.store.channel(target) != null and count > 0;
+    const sb = d.hit(ctx, 0xF003, send);
+    d.rect(dl, send, if (valid) (if (sb.hovered) ctx.col(.accent).mix(ctx.col(.text), 0.12) else ctx.col(.accent)) else ctx.col(.faint), @max(ctx.th.radius - 2, 3));
+    _ = d.textClipped(dl, fam.get(.medium), 13, send.x + 15, d.centerY(send, 13), if (valid) ctx.col(.accent_text) else ctx.col(.muted), i18n.tr("Encaminhar", "Forward"), send.w - 24);
+    if (valid and sb.clicked) {
+        ctx.act(.{ .forward_message = .{ .source_channel = source_channel, .source_message = source_message, .destination_channel = target } });
+        return close(ctx);
+    }
+    if (count == 0) d.text(dl, fam.get(.regular), 12, r.x + 20, r.y + 111, ctx.col(.muted), i18n.tr("Não há canais disponíveis para encaminhar.", "No channels are available as a destination."));
+}
+
+var forward_label_buf: [192]u8 = undefined;
+
 /// Fileira "Cor do servidor": a primeira bolinha volta para a cor de sempre,
 /// as outras são a paleta de destaque das configurações.
 fn guildColors(ctx: *d.Ctx, dl: *c.ImDrawList, guild: Id, r: d.Rect, y: f32) void {
@@ -525,6 +617,7 @@ fn choose(ctx: *d.Ctx, kind: state.MenuKind, id: Id, item: u8, r: d.Rect) void {
             copyFmt(ctx, "https://discord.com/channels/{s}/{d}/{d}", .{ guildPart(&gb, f.cs.info.guild), f.cs.info.id, id });
         },
         7 => ctx.act(.{ .mark_unread = id }),
+        14 => if (ctx.store.findAny(id)) |f| st.popup = .{ .forward = .{ .channel = f.cs.info.id, .message = id } },
         13 => if (ctx.store.findAny(id)) |f| ctx.act(.{ .pin_message = .{ .channel = f.cs.info.id, .id = id, .add = !f.m.msg.pinned } }),
         8, 25, 44, 63 => copyFmt(ctx, "{d}", .{id}),
         10 => ctx.act(if (st.saved.find(id) != null) .{ .unsave_message = id } else .{ .save_message = id }),

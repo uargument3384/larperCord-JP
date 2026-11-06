@@ -29,6 +29,8 @@ pub const Popup = union(enum) {
     /// "Criar thread" a partir de uma mensagem e "Novo post" num fórum.
     new_thread: struct { message: Id },
     new_post: struct { forum: Id },
+    /// Encaminhar uma mensagem para outro canal.
+    forward: struct { channel: Id, message: Id, target: Id = 0 },
     /// Editar um servidor ou um grupo de DM (ui/edit_place.zig).
     edit_place: struct { id: Id, group: bool },
 };

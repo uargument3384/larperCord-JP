@@ -185,6 +185,8 @@ pub const ImageChange = union(enum) {
 pub const Command = union(enum) {
     /// `files`: caminhos dos arquivos a enviar (alocados, terminados em 0).
     send_message: struct { channel: Id, content: []const u8, nonce: u64, reply_to: Id = 0, files: []const [:0]const u8 = &.{} },
+    /// Encaminhamento nativo do Discord (cópia imutável da mensagem de origem).
+    forward_message: struct { source_channel: Id, source_message: Id, destination_channel: Id },
     edit_message: struct { channel: Id, id: Id, content: []const u8 },
     delete_message: struct { channel: Id, id: Id },
     delete_thread: Id,
@@ -313,6 +315,8 @@ pub const Action = union(enum) {
     open_pins: Id,
     want_pins: Id,
     pin_message: struct { channel: Id, id: Id, add: bool },
+    /// Abre o seletor de destino e encaminha uma mensagem existente.
+    forward_message: struct { source_channel: Id, source_message: Id, destination_channel: Id },
     /// Link de convite na tela: busca o cartão (uma vez por código).
     want_invite: InviteCode,
     /// Liga/desliga uma opção do tema atual (índice em `Theme.options`).
