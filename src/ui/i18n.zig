@@ -60,6 +60,13 @@ fn japanese(pt: []const u8, english: []const u8) ?[:0]const u8 {
     return null;
 }
 
+fn japaneseFormat(comptime pt: []const u8, comptime english: []const u8) ?[:0]const u8 {
+    inline for (translations) |t| {
+        if (comptime std.mem.eql(u8, pt, t.pt) and std.mem.eql(u8, english, t.en)) return t.ja;
+    }
+    return null;
+}
+
 pub fn set(l: Lang) void {
     lang.store(l, .release);
 }
@@ -86,8 +93,14 @@ pub fn trZ(pt: [:0]const u8, english: [:0]const u8) [:0]const u8 {
 pub fn fmt(buf: []u8, comptime pt: []const u8, comptime english: []const u8, args: anytype) []const u8 {
     var wr = std.Io.Writer.fixed(buf);
     const current = lang.load(.acquire);
-    const format = if (current == .ja) japanese(pt, english) orelse english else if (current == .en) english else pt;
-    wr.print(format, args) catch {};
+    const ja_format = comptime japaneseFormat(pt, english);
+    if (current == .ja) {
+        if (ja_format) |format| wr.print(format, args) catch {} else wr.print(english, args) catch {};
+    } else if (current == .en) {
+        wr.print(english, args) catch {};
+    } else {
+        wr.print(pt, args) catch {};
+    }
     const out = wr.buffered();
     if (out.len < buf.len) return out;
     var k = out.len;
@@ -101,14 +114,22 @@ pub fn fmt(buf: []u8, comptime pt: []const u8, comptime english: []const u8, arg
 
 pub fn fmtZ(buf: []u8, comptime pt: []const u8, comptime english: []const u8, args: anytype) [:0]const u8 {
     const current = lang.load(.acquire);
-    const format = if (current == .ja) japanese(pt, english) orelse english else if (current == .en) english else pt;
-    return std.fmt.bufPrintSentinel(buf, format, args, 0) catch "";
+    const ja_format = comptime japaneseFormat(pt, english);
+    if (current == .ja) {
+        if (ja_format) |format| return std.fmt.bufPrintSentinel(buf, format, args, 0) catch "";
+        return std.fmt.bufPrintSentinel(buf, english, args, 0) catch "";
+    }
+    return std.fmt.bufPrintSentinel(buf, if (current == .en) english else pt, args, 0) catch "";
 }
 
 pub fn allocPrint(gpa: std.mem.Allocator, comptime pt: []const u8, comptime english: []const u8, args: anytype) ![]u8 {
     const current = lang.load(.acquire);
-    const format = if (current == .ja) japanese(pt, english) orelse english else if (current == .en) english else pt;
-    return std.fmt.allocPrint(gpa, format, args);
+    const ja_format = comptime japaneseFormat(pt, english);
+    if (current == .ja) {
+        if (ja_format) |format| return std.fmt.allocPrint(gpa, format, args);
+        return std.fmt.allocPrint(gpa, english, args);
+    }
+    return std.fmt.allocPrint(gpa, if (current == .en) english else pt, args);
 }
 
 /// System language: Portuguese and Japanese are detected explicitly; English is the fallback.
