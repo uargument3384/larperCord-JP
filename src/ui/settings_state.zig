@@ -51,7 +51,7 @@ pub const Settings = struct {
     page: Page = .aparencia,
 
     // Aparência / acessibilidade
-    font_scale: f32 = 1.0,
+    font_scale: f32 = 1.12,
     compact: bool = false,
     show_avatars: bool = true,
     reduce_motion: bool = false,
