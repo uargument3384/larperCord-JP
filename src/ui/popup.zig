@@ -508,7 +508,8 @@ fn forwardDialog(ctx: *d.Ctx, source_channel: Id, source_message: Id, target: Id
     if (select_hit.clicked) dropdown.toggle(0xF001);
 
     const list_h = @max(@as(f32, 32), @as(f32, @floatFromInt(count)) * 32);
-    if (dropdown.begin(ctx, 0xF001, anchor, anchor.w, list_h)) |*dd| {
+    if (dropdown.begin(ctx, 0xF001, anchor, anchor.w, list_h)) |dd_value| {
+        var dd = dd_value;
         defer dd.end();
         for (ids[0..count]) |cid| {
             const row = dd.row(32, cid == target);
@@ -617,7 +618,11 @@ fn choose(ctx: *d.Ctx, kind: state.MenuKind, id: Id, item: u8, r: d.Rect) void {
             copyFmt(ctx, "https://discord.com/channels/{s}/{d}/{d}", .{ guildPart(&gb, f.cs.info.guild), f.cs.info.id, id });
         },
         7 => ctx.act(.{ .mark_unread = id }),
-        14 => if (ctx.store.findAny(id)) |f| st.popup = .{ .forward = .{ .channel = f.cs.info.id, .message = id } },
+        14 => {
+            if (ctx.store.findAny(id)) |f| {
+                st.popup = .{ .forward = .{ .channel = f.cs.info.id, .message = id } };
+            }
+        },
         13 => if (ctx.store.findAny(id)) |f| ctx.act(.{ .pin_message = .{ .channel = f.cs.info.id, .id = id, .add = !f.m.msg.pinned } }),
         8, 25, 44, 63 => copyFmt(ctx, "{d}", .{id}),
         10 => ctx.act(if (st.saved.find(id) != null) .{ .unsave_message = id } else .{ .save_message = id }),
