@@ -632,19 +632,25 @@ fn form(f: *Frame, x: f32, y0: f32, w: f32) ?Result {
         y += 28;
         l.help_k = anim.step(l.help_k, if (l.help) 1 else 0, 14);
         if (l.help_k > 0.01) {
+            const steps_ja = [_][]const u8{
+                "このアプリはDiscord公式クライアントではありません。",
+                "アカウントのトークンは非常に重要な認証情報です。",
+                "トークンを他人に共有したり、不審な場所へ入力しないでください。",
+                "安全性を確認できない場合は、デモモードを利用してください。",
+            };
             const steps_pt = [_][]const u8{
-                "Abra discord.com/app no navegador e entre na conta.",
-                "Aperte F12 e vá na aba Rede (Network).",
-                "Troque de canal e clique numa requisição para /api.",
-                "Em Cabeçalhos, copie o valor de Authorization.",
+                "Este app não é um cliente oficial do Discord.",
+                "O token da conta é uma credencial muito importante.",
+                "Não compartilhe o token nem o insira em locais suspeitos.",
+                "Se não puder verificar a segurança, use o modo demonstração.",
             };
             const steps_en = [_][]const u8{
-                "Open discord.com/app in your browser and log in.",
-                "Press F12 and go to the Network tab.",
-                "Switch channels and click a request to /api.",
-                "Under Headers, copy the Authorization value.",
+                "This app is not an official Discord client.",
+                "Your account token is highly sensitive authentication data.",
+                "Never share it or enter it into untrusted places.",
+                "If you cannot verify the app's safety, use demo mode.",
             };
-            const steps = if (i18n.en()) steps_en else steps_pt;
+            const steps = if (i18n.ja()) steps_ja else if (i18n.en()) steps_en else steps_pt;
             const full_h: f32 = 4 * 26 + 50;
             const hr: Rect = .{ .x = x, .y = y, .w = w, .h = full_h * l.help_k };
             c.ImDrawList_PushClipRect(dl, d.v(hr.x - 2, hr.y), d.v(hr.right() + 2, hr.bottom()), true);
@@ -703,7 +709,12 @@ fn connecting(f: *Frame, x: f32, y0: f32, w: f32) ?Result {
         "Loading servers and direct messages",
         "Getting your channels ready",
     };
-    const tips = if (i18n.en()) tips_en else tips_pt;
+    const tips_ja = [_][]const u8{
+        "ゲートウェイへの接続を開始しています",
+        "サーバーとダイレクトメッセージを読み込んでいます",
+        "チャンネルを準備しています",
+    };
+    const tips = if (i18n.ja()) tips_ja else if (i18n.en()) tips_en else tips_pt;
     const since = t - l.phase_at;
     const tip = tips[@min(tips.len - 1, @as(usize, @intFromFloat(since / 1.6)))];
     f.centered(.regular, 14, cx, y, f.p.muted, tip);
