@@ -706,6 +706,9 @@ fn japanese(pt: []const u8, english: []const u8) ?[:0]const u8 {
 }
 
 fn japaneseFormat(comptime pt: []const u8, comptime english: []const u8) ?[:0]const u8 {
+    // The translation table is large; each call scans it at comptime.
+    // Raise the evaluator budget so normal builds can compile all call sites.
+    @setEvalBranchQuota(100_000);
     inline for (translations) |t| {
         if (comptime std.mem.eql(u8, pt, t.pt) and std.mem.eql(u8, english, t.en)) return t.ja;
     }
