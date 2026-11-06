@@ -229,6 +229,7 @@ pub const Gateway = struct {
                         .reply_to = m.reply_to,
                     } });
                 },
+                .forward_message => {}, // O gateway de demonstração não simula encaminhamentos.
                 .edit_message => |m| {
                     const shown = try jsonx.simplifyContent(alloc, m.content);
                     var raw: ?[]const u8 = null;
