@@ -24,6 +24,8 @@ const translations = [_]Translation{
     .{ .pt = "Erros no código", .en = "Code diagnostics", .ja = "コード診断" },
     .{ .pt = "Plugins", .en = "Plugins", .ja = "プラグイン" },
     .{ .pt = "Atualizações", .en = "Updates", .ja = "アップデート" },
+    .{ .pt = "A função de atualização está temporariamente desativada. Ela será reativada quando a integração com o GitHub Releases estiver pronta.", .en = "The update feature is temporarily disabled. It will be re-enabled once GitHub Releases integration is ready.", .ja = "更新機能は一時的に無効化されています。GitHub Releasesとの連携準備が整い次第、再有効化されます。" },
+    .{ .pt = "Ver as versões no GitHub", .en = "View releases on GitHub", .ja = "GitHubのリリースを見る" },
     .{ .pt = "Novidades", .en = "What's new", .ja = "新機能" },
     .{ .pt = "Sobre", .en = "About", .ja = "このアプリについて" },
     .{ .pt = "Sair", .en = "Log Out", .ja = "ログアウト" },
