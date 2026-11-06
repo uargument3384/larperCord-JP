@@ -5,7 +5,7 @@ const c = @import("c");
 pub const Lang = enum(u8) { pt, en, ja };
 var lang: std.atomic.Value(Lang) = .init(.ja);
 
-const Translation = struct { pt: []const u8, en: []const u8, ja: []const u8 };
+const Translation = struct { pt: []const u8, en: []const u8, ja: [:0]const u8 };
 const translations = [_]Translation{
     .{ .pt = "CONFIGURAÇÕES DE USUÁRIO", .en = "USER SETTINGS", .ja = "ユーザー設定" },
     .{ .pt = "CONFIGURAÇÕES DO APLICATIVO", .en = "APP SETTINGS", .ja = "アプリ設定" },
@@ -53,7 +53,7 @@ const translations = [_]Translation{
     .{ .pt = "Cliente não oficial: usar contas de usuário fora do app oficial vai contra os termos do Discord.", .en = "Unofficial client: using user accounts outside the official app is against Discord's terms.", .ja = "非公式クライアントです。公式アプリ以外でユーザーアカウントを使用すると、Discordの利用規約に違反する場合があります。" },
 };
 
-fn japanese(pt: []const u8, english: []const u8) ?[]const u8 {
+fn japanese(pt: []const u8, english: []const u8) ?[:0]const u8 {
     for (translations) |t| {
         if (std.mem.eql(u8, pt, t.pt) and std.mem.eql(u8, english, t.en)) return t.ja;
     }
@@ -78,7 +78,7 @@ pub fn tr(pt: []const u8, english: []const u8) []const u8 {
 
 pub fn trZ(pt: [:0]const u8, english: [:0]const u8) [:0]const u8 {
     const current = lang.load(.acquire);
-    if (current == .ja) return if (japanese(pt, english)) |v| @ptrCast(v.ptr) else english;
+    if (current == .ja) return japanese(pt, english) orelse english;
     return if (current == .en) english else pt;
 }
 
