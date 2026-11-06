@@ -199,12 +199,12 @@ fn focus(p: *P) void {
     const ctx = p.ctx;
     const f = &ctx.st.filtros;
     const on = f.focusOn(ctx.now_ms);
-    const opts = [_]struct { pt: []const u8, en: []const u8, min: ?u32 }{
-        .{ .pt = "Desligado", .en = "Off", .min = null },
-        .{ .pt = "15 min", .en = "15 min", .min = 15 },
-        .{ .pt = "30 min", .en = "30 min", .min = 30 },
-        .{ .pt = "1 h", .en = "1 h", .min = 60 },
-        .{ .pt = "Até desligar", .en = "Until I turn it off", .min = 0 },
+    const opts = [_]struct { pt: []const u8, en: []const u8, ja: []const u8, min: ?u32 }{
+        .{ .pt = "Desligado", .en = "Off", .ja = "オフ", .min = null },
+        .{ .pt = "15 min", .en = "15 min", .ja = "15分", .min = 15 },
+        .{ .pt = "30 min", .en = "30 min", .ja = "30分", .min = 30 },
+        .{ .pt = "1 h", .en = "1 h", .ja = "1時間", .min = 60 },
+        .{ .pt = "Até desligar", .en = "Until I turn it off", .ja = "解除するまで", .min = 0 },
     };
     const gap: f32 = 8;
     const bw = (p.w - gap * @as(f32, @floatFromInt(opts.len - 1))) / @as(f32, @floatFromInt(opts.len));
@@ -215,7 +215,7 @@ fn focus(p: *P) void {
         const sel = if (o.min) |m| (on and m == 0 and f.focus_until == filtros.forever) else !on;
         d.rect(p.dl, r, ctx.col(.rail).alpha(0.6).mix(ctx.col(.accent).alpha(0.22), if (sel) 1 else if (hb.hovered) 0.4 else 0), ctx.th.radius + 2);
         d.border(p.dl, r, if (sel) ctx.col(.accent) else ctx.col(.border), ctx.th.radius + 2, if (sel) 2 else 1);
-        const label = if (i18n.en()) o.en else o.pt;
+        const label = if (i18n.ja()) o.ja else if (i18n.en()) o.en else o.pt;
         const tw = d.width(ctx.ui.get(.semibold), 15, label);
         _ = d.textClipped(p.dl, ctx.ui.get(.semibold), 15, r.x + @max(6, (r.w - tw) / 2), d.centerY(r, 15), if (sel) ctx.col(.text) else ctx.col(.muted), label, r.w - 12);
         if (hb.clicked) {
