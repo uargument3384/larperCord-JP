@@ -119,7 +119,11 @@ pub fn fmtZ(buf: []u8, comptime pt: []const u8, comptime english: []const u8, ar
         if (ja_format) |format| return std.fmt.bufPrintSentinel(buf, format, args, 0) catch "";
         return std.fmt.bufPrintSentinel(buf, english, args, 0) catch "";
     }
-    return std.fmt.bufPrintSentinel(buf, if (current == .en) english else pt, args, 0) catch "";
+    return switch (current) {
+        .en => std.fmt.bufPrintSentinel(buf, english, args, 0) catch "",
+        .pt => std.fmt.bufPrintSentinel(buf, pt, args, 0) catch "",
+        .ja => unreachable,
+    };
 }
 
 pub fn allocPrint(gpa: std.mem.Allocator, comptime pt: []const u8, comptime english: []const u8, args: anytype) ![]u8 {
@@ -129,7 +133,11 @@ pub fn allocPrint(gpa: std.mem.Allocator, comptime pt: []const u8, comptime engl
         if (ja_format) |format| return std.fmt.allocPrint(gpa, format, args);
         return std.fmt.allocPrint(gpa, english, args);
     }
-    return std.fmt.allocPrint(gpa, if (current == .en) english else pt, args);
+    return switch (current) {
+        .en => std.fmt.allocPrint(gpa, english, args),
+        .pt => std.fmt.allocPrint(gpa, pt, args),
+        .ja => unreachable,
+    };
 }
 
 /// System language: Portuguese and Japanese are detected explicitly; English is the fallback.
