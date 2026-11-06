@@ -12,6 +12,9 @@ Zig · SDL3 · Dear ImGui · FreeType · zero Electron
 
 *The same binary and the same data, only the `.kdl` file changes. There are 11 themes, each in light and dark. The last tile is `cupertino` in light.*
 
+このクライアントはフォーク元のlarpercordの日本語対応、スラッシュコマンドと転送機能へのフル実装を実現したフォークです。
+
+Noto Sansを使用しています。
 </div>
 
 > [!WARNING]g
@@ -21,7 +24,7 @@ Zig · SDL3 · Dear ImGui · FreeType · zero Electron
 
 ### If Discord locks your account
 
-Discord disables accounts or forces a password reset when it thinks an account is a spam bot or was compromised. It can happen on any client, but third-party clients tend to trigger it more often. It already happened to tｇふぁｇふぁｄhis project's developer, after a day of testing. **Use a secondary account.**
+Discord disables accounts or forces a password reset when it thinks an account is a spam bot or was compromised. It can happen on any client, but third-party clients tend to trigger it more often. It already happened to this project's developer, after a day of testing. **Use a secondary account.**
 
 These are the usual triggers people report, so do them in the official client:
 
