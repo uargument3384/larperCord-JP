@@ -502,7 +502,7 @@ fn forwardDialog(ctx: *d.Ctx, source_channel: Id, source_message: Id, target: Id
     const label = if (target != 0) forwardLabel(ctx, target, &forward_label_buf) else i18n.tr("Selecionar canal de destino…", "Select a destination channel…");
     const select_hit = d.hit(ctx, 0xF001, anchor);
     qa.mark(anchor, "forward-target-select", .{});
-    d.rect(dl, anchor, if (select_hit.hovered) ctx.col(.hover) else ctx.col(.field), @max(ctx.th.radius - 2, 3));
+    d.rect(dl, anchor, if (select_hit.hovered) ctx.col(.hover) else ctx.col(.surface), @max(ctx.th.radius - 2, 3));
     d.border(dl, anchor, ctx.col(.border), @max(ctx.th.radius - 2, 3), 1);
     _ = d.textClipped(dl, fam.get(.regular), 14, anchor.x + 12, d.centerY(anchor, 14), ctx.col(if (target != 0) .text else .muted), label, anchor.w - 36);
     if (select_hit.clicked) dropdown.toggle(0xF001);
@@ -529,7 +529,7 @@ fn forwardDialog(ctx: *d.Ctx, source_channel: Id, source_message: Id, target: Id
     if (cb.hovered) d.rect(dl, cancel, ctx.col(.hover), @max(ctx.th.radius - 2, 3));
     _ = d.textClipped(dl, fam.get(.medium), 13, cancel.x + 12, d.centerY(cancel, 13), ctx.col(.text), i18n.tr("Cancelar", "Cancel"), cancel.w - 20);
     if (cb.clicked) return close(ctx);
-    const valid = target != 0 and ctx.store.channel(target) != null and count > 0;
+    const valid = if (target != 0) (if (ctx.store.channel(target)) |cs| ctx.store.canAccess(&cs.info) and ctx.store.canSend(&cs.info) else false) else false;
     const sb = d.hit(ctx, 0xF003, send);
     d.rect(dl, send, if (valid) (if (sb.hovered) ctx.col(.accent).mix(ctx.col(.text), 0.12) else ctx.col(.accent)) else ctx.col(.faint), @max(ctx.th.radius - 2, 3));
     _ = d.textClipped(dl, fam.get(.medium), 13, send.x + 15, d.centerY(send, 13), if (valid) ctx.col(.accent_text) else ctx.col(.muted), i18n.tr("Encaminhar", "Forward"), send.w - 24);
