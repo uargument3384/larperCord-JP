@@ -60,6 +60,10 @@ pub const Viewer = struct {
     /// Banner, ícone ou foto: o CDN não diz o tamanho antes. `w` e `h` são um
     /// palpite até a imagem chegar, e ela é pedida inteira.
     original: bool = false,
+    /// Zoom relativo ao tamanho ajustado à janela; pan em pixels da tela.
+    zoom: f32 = 1.0,
+    pan_x: f32 = 0,
+    pan_y: f32 = 0,
 };
 
 /// Arquivo escolhido para ir junto com a próxima mensagem.
