@@ -302,18 +302,30 @@ pub fn viewer(ctx: *d.Ctx) void {
         else => {},
     };
 
-    // Cabe na janela, sem passar do tamanho original.
+    // Ajusta inicialmente à janela; a roda aumenta/reduz e arrastar move a imagem.
     const ow: f32 = @floatFromInt(v.w);
     const oh: f32 = @floatFromInt(v.h);
-    const s = @min(1.0, @min((win.w - 120) / ow, (win.h - 150) / oh));
-    const zoom = 0.94 + 0.06 * k;
-    const iw = ow * s * zoom;
-    const ih = oh * s * zoom;
-    const ir: d.Rect = .{ .x = win.x + (win.w - iw) / 2, .y = win.y + (win.h - 50 - ih) / 2, .w = iw, .h = ih };
+    const fit = @min(1.0, @min((win.w - 120) / ow, (win.h - 150) / oh));
+    if (win.contains(ctx.mouse.x, ctx.mouse.y) and ctx.io.*.MouseWheel != 0) {
+        v.zoom = @max(0.5, @min(8.0, v.zoom * (if (ctx.io.*.MouseWheel > 0) @as(f32, 1.2) else 1.0 / 1.2)));
+    }
+    const zoom = (0.94 + 0.06 * k) * v.zoom;
+    const iw = ow * fit * zoom;
+    const ih = oh * fit * zoom;
+    const ir: d.Rect = .{
+        .x = win.x + (win.w - iw) / 2 + v.pan_x,
+        .y = win.y + (win.h - 50 - ih) / 2 + v.pan_y,
+        .w = iw,
+        .h = ih,
+    };
+    if (ir.contains(ctx.mouse.x, ctx.mouse.y) and c.ImGui_IsMouseDragging(0, 0)) {
+        v.pan_x += ctx.io.*.MouseDelta.x;
+        v.pan_y += ctx.io.*.MouseDelta.y;
+    }
     qa.mark(ir, "viewer", .{});
     const url = v.url[0..v.url_len];
     const scale = ctx.io.*.DisplayFramebufferScale.x;
-    switch (if (v.original) ctx.images.get(url, full_side, full_side) else ctx.images.get(url, ow * s * scale, oh * s * scale)) {
+    switch (if (v.original) ctx.images.get(url, full_side, full_side) else ctx.images.get(url, ow * fit * zoom * scale, oh * fit * zoom * scale)) {
         .ready => |t| c.ImDrawList_AddImageRounded(dl, t.ref, d.v(ir.x, ir.y), d.v(ir.right(), ir.bottom()), d.v(0, 0), d.v(1, 1), d.Rgba.white.col(k), 6, 0),
         .loading => {
             d.rect(dl, ir, d.Rgba.white.alpha(0.04 * k), 6);
@@ -361,6 +373,7 @@ pub fn viewer(ctx: *d.Ctx) void {
             } else openUrl(url);
         }
     }
+    // Zoom: roda do mouse; arraste a imagem ampliada para navegar.
     // Fechar: Esc, o X ou um clique fora da imagem.
     const xr: d.Rect = .{ .x = win.right() - 52, .y = win.y + 16, .w = 36, .h = 36 };
     const xh = d.hit(ctx, 0x7200, xr);
