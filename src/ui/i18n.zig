@@ -259,7 +259,7 @@ const translations = [_]Translation{
     .{ .pt = "Assistindo", .en = "Watching", .ja = "視聴中" },
     .{ .pt = "Competindo", .en = "Competing", .ja = "競技中" },
     .{ .pt = "Jogando", .en = "Playing", .ja = "プレイ中" },
-    .{ .pt = "{d} de {s} de {d}", .en = "{1s} {0d}, {2d}", .ja = "{s} {d}日 {d}年" },
+    .{ .pt = "{d} de {s} de {d}", .en = "{1s} {0d}, {2d}", .ja = "{1s} {0d}日 {2d}年" },
     .{ .pt = "No servidor {s} desde", .en = "{s} member since", .ja = "{s} サーバー参加日" },
     .{ .pt = "Caixa de entrada", .en = "Inbox", .ja = "受信箱" },
     .{ .pt = "Marcar como lido", .en = "Mark as read", .ja = "既読にする" },
@@ -369,10 +369,12 @@ pub fn set(l: Lang) void {
     lang.store(l, .release);
 }
 
-// Japanese uses English-only fallback branches until each string has a Japanese entry.
+pub fn ja() bool {
+    return lang.load(.acquire) == .ja;
+}
+
 pub fn en() bool {
-    const current = lang.load(.acquire);
-    return current == .en or current == .ja;
+    return lang.load(.acquire) == .en or lang.load(.acquire) == .ja;
 }
 
 pub fn tr(pt: []const u8, english: []const u8) []const u8 {
