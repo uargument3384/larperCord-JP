@@ -613,7 +613,7 @@ fn page(p: *Page, previews: []const Preview) void {
         .aparencia => {
             p.title(i18n.tr("Aparência", "Appearance"));
             p.heading(i18n.tr("Modo", "Mode"));
-            p.segmented(if (i18n.en()) &.{ "Dark", "Light", "Follow system" } else &.{ "Escuro", "Claro", "Seguir o sistema" }, &s.color_mode);
+            p.segmented(if (i18n.ja()) &.{ "ダーク", "ライト", "システム設定に従う" } else if (i18n.en()) &.{ "Dark", "Light", "Follow system" } else &.{ "Escuro", "Claro", "Seguir o sistema" }, &s.color_mode);
             p.heading(i18n.tr("Tema", "Theme"));
             p.note(i18n.tr("Cada tema muda o layout inteiro, não só as cores. Todos têm versão clara e escura.", "Each theme changes the whole layout, not just the colors. All of them come in light and dark."));
             themeGrid(p, previews);
@@ -641,10 +641,10 @@ fn page(p: *Page, previews: []const Preview) void {
             p.note(i18n.tr("Vale para qualquer tema; \"T\" volta à cor do tema.", "Works with every theme; \"T\" goes back to the theme's color."));
             p.swatches(&@import("../app.zig").App.accents, &s.accent);
             p.heading(i18n.tr("Cantos", "Corners"));
-            p.segmented(if (i18n.en()) &.{ "Theme", "Square", "Soft", "Round" } else &.{ "Do tema", "Retos", "Suaves", "Redondos" }, &s.corners);
+            p.segmented(if (i18n.ja()) &.{ "テーマ", "四角", "ソフト", "丸型" } else if (i18n.en()) &.{ "Theme", "Square", "Soft", "Round" } else &.{ "Do tema", "Retos", "Suaves", "Redondos" }, &s.corners);
             p.divider();
             themeColors(p);
-            p.heading("Layout");
+            p.heading(i18n.tr("Layout", "Layout"));
             p.toggle(i18n.tr("Lista de membros", "Member list"), i18n.tr("Mostra quem está no servidor (quando o tema tem uma).", "Shows who's in the server (when the theme has one)."), &s.show_member_list);
             p.toggle(i18n.tr("Barra de status", "Status bar"), i18n.tr("Conexão, ping, RAM e relógio (quando o tema tem uma).", "Connection, ping, RAM and clock (when the theme has one)."), &s.show_status_bar);
             p.note(i18n.tr("Arraste a divisa entre os painéis para mudar a largura da lista de canais, da lista de membros e da tela dividida. Duplo clique na divisa volta ao padrão do tema.", "Drag the edge between panels to resize the channel list, the member list and split view. Double-click an edge to go back to the theme's default."));
@@ -664,7 +664,7 @@ fn page(p: *Page, previews: []const Preview) void {
             p.toggle(i18n.tr("Sublinhar links", "Underline links"), i18n.tr("Desligado, o sublinhado só aparece com o mouse em cima.", "When off, links are only underlined on hover."), &s.underline_links);
         },
         .chat => {
-            p.title("Chat");
+            p.title(i18n.tr("Chat", "Chat"));
             p.heading(i18n.tr("Imagens", "Images"));
             p.toggle(i18n.tr("Reproduzir GIFs automaticamente", "Automatically play GIFs"), i18n.tr("Desligado, o GIF anda quando o mouse passa por cima.", "When off, a GIF plays while you hover it."), &s.autoplay_gifs);
             p.toggle(i18n.tr("Mostrar imagens de links", "Show images from links"), i18n.tr("Imagens e GIFs de links mandados na conversa.", "Images and GIFs from links posted in chat."), &s.show_embeds);
