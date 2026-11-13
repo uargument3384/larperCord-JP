@@ -10,6 +10,14 @@ Zig · SDL3 · Dear ImGui · FreeType · zero Electron
 
 ![larperCord themes](docs/themes.png)
 
+Since the original project now supports Japanese and has fulfilled all its objectives, I am archiving this project.
+
+Thank you.
+
+noelel
+
+
+
 *The same binary and the same data, only the `.kdl` file changes. There are 11 themes, each in light and dark. The last tile is `cupertino` in light.*
 
 このクライアントはフォーク元のlarpercordの日本語対応、スラッシュコマンドと転送機能へのフル実装を実現したフォークです。
